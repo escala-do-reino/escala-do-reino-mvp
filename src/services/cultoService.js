@@ -19,7 +19,8 @@ export async function listarCultosPorMes(ano, mes) {
     );
 
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => doc.data());
+
+    return snapshot.docs.map(doc => Culto.fromFirestore(doc));
 }
 
 export async function adicionarCulto(culto) {
