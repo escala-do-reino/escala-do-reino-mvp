@@ -9,23 +9,28 @@ export class Culto {
     }
 
     static fromFirestore(doc) {
-        const dados = doc.data();
-        let dataCulto;    
+    const dados = doc.data();
 
-        if (dados.data && typeof dados.data.toDate === 'function') {
-            dataCulto = dados.data.toDate();
-        } else {
-            console.warn(`Documento [ID: ${doc.id}] possui campo 'data' ausente ou em formato inválido.`, dados.data);
-            dataCulto = null;
-        }
+    let dataCulto = null;
 
-        return new Culto(
-            doc.id,
-            dados.nome,
-            dataCulto,
-            dados.regentes || []
-        );
+    if (dados.data instanceof Date) {
+        // Firestore devolveu um Date diretamente
+        dataCulto = dados.data;
+    } else if (dados.data && typeof dados.data.toDate === "function") {
+        // Firestore devolveu um Timestamp
+        dataCulto = dados.data.toDate();
+    } else {
+        console.warn(`Campo 'data' inválido no documento ${doc.id}:`, dados.data);
     }
+
+    return new Culto(
+        doc.id,
+        dados.nome ?? "",
+        dataCulto,
+        Array.isArray(dados.regentes) ? dados.regentes : []
+    );
+}
+
 
     toFirestore() {
         if (!(this.data instanceof Date) || isNaN(this.data.getTime())) {
